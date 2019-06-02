@@ -75,18 +75,21 @@ contract HydroFinance {
     struct User {
         uint256 einOwner;
         address owner;
-        Card[] cards;
-        Bank[] banks;
-        Investment[] investments;
+        uint256[] cardIds;
+        uint256[] bankIds;
+        uint256[] investmentIds;
     }
     mapping(uint256 => User) public userByEin;
+    mapping(uint256 => Card) public cardById;
+    mapping(uint256 => Bank) public bankById;
+    mapping(uint256 => Investment) public investmentById;
     User[] public users;
     address public identityRegistry;
 
     /// @notice To setup the address of the identity registry to use for this contract
     /// @param _identityRegistry The address of the Identity Registry contract
     constructor(address _identityRegistry) public {
-        require(_identityRegistry != 0, 'The address of the identity registry contract cannot be empty');
+        require(_identityRegistry != address(0), 'The address of the identity registry contract cannot be empty');
         identityRegistry = _identityRegistry;
     }
 
@@ -100,15 +103,25 @@ contract HydroFinance {
 
     }
 
-    function addBank(_bankNumber, _name) public {
+    function addBank(uint256 _bankNumber, string memory _name) public {
 
     }
 
-    function addInvestmentAccount(_investmentNumber, _name) public {
+    function addInvestmentAccount(uint256 _investmentNumber, string memory _name) public {
 
     }
 
-    function removeAccount(_id) public {
+    function removeAccount(uint256 _id) public {
+
+    }
+
+    function checkAndCreateUser() internal {
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        uint256[] memory emptyArray = new uint256[](100);
+        User memory newUser = User(ein, msg.sender, emptyArray, emptyArray, emptyArray);
+    }
+
+    function checkUserExists(uint256 _ein) public view returns(bool) {
 
     }
 }
