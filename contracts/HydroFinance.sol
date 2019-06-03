@@ -141,6 +141,8 @@ contract HydroFinance {
         lastInvestmentId++;
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
         Investment memory inv = Investment(lastInvestmentId, ein, _name, _investmentNumber);
+        investmentById[lastInvestmentId] = inv;
+        userByEin[ein].investmentIds.push(lastInvestmentId);
     }
 
     /// @notice To delete an account
@@ -170,5 +172,14 @@ contract HydroFinance {
             users.push(newUser);
             userByEin[ein] = newUser;
         }
+    }
+
+    /// @notice To get the user data
+    /// @return Returns the EIN, address owner, array of card ids, array of bank ids and array of investment ids
+    function getUserData() public view returns() {
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        User memory u = userByEin[ein];
+
+        return (u.einOwner, u.owner, u.cardIds, u.bankIds, u.investmentIds);
     }
 }
