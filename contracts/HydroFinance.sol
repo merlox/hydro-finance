@@ -83,6 +83,9 @@ contract HydroFinance {
     mapping(uint256 => Card) public cardById;
     mapping(uint256 => Bank) public bankById;
     mapping(uint256 => Investment) public investmentById;
+    uint256 public lastCardId;
+    uint256 public lastBankId;
+    uint256 public lastInvestmentId;
     User[] public users;
     address public identityRegistry;
 
@@ -93,29 +96,54 @@ contract HydroFinance {
         identityRegistry = _identityRegistry;
     }
 
-    // @notice To add a new credit card to your account. All function will be encrypted the moment the data is added
-    function addCreditCard(uint256 _cardNumber, uint256 _expiry, string memory _name, uint256 _cvv) public {
+    /// @notice To add a new credit card to your account. All function will be encrypted the moment the data is added
+    /// @param _cardNumber The number of the credit or debit card to add to your account
+    /// @param _expiry When the card expires in timestamp
+    /// @param _name The name of the card
+    /// @param _cvv The 3 or 4 digit code for verifying the card
+    function addCard(uint256 _cardNumber, uint256 _expiry, string memory _name, uint256 _cvv) public {
         require(_cardNumber != 0, 'The card number cannot be empty');
         require(_expiry != 0, 'The card expiration date cannot be empty');
         require(bytes(_name).length != 0, 'The card name must be set');
         require(_cvv != 0, 'The cvv cannot be empty');
 
-
+        checkAndCreateUser();
+        lastCardId++;
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        Card memory newCard = Card(lastCardId, ein, _name, _cardNumber, _expiry, _cvv);
+        cardById[lastCardId] = newCard;
+        userByEin[ein].cardIds.push(lastCardId);
     }
 
+    /// @notice To add a new bank
+    /// @param _bankNumber The number of the bank to add
+    /// @param _name The name of the bank
     function addBank(uint256 _bankNumber, string memory _name) public {
+        require(_bankNumber != 0, 'The bank number must be set');
+        require(bytes(_name).length != 0, 'The bank name must be set');
 
+        checkAndCreateUser();
+        lastBankId++;
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        Bank memory newBank = Bank(lastBankId, ein, _name, _bankNumber);
+        bankById[lastBankId] = newBank;
+        userByEin[ein].bankIds.push(lastBankId);
     }
 
     function addInvestmentAccount(uint256 _investmentNumber, string memory _name) public {
+        require(_investmentNumber != 0, 'The investment account number must be set');
+        require(bytes(_name).length != 0, 'The name of the investment account must be set');
 
+        checkAndCreateUser();
+        lastInvestmentId++;
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
     }
 
     function removeAccount(uint256 _id) public {
 
     }
 
-    /// @notice Checks if a user exists and if not, it creates a new one
+    /// @notice To create a new user if he doesn't have an account yet using his EIN identifier
     function checkAndCreateUser() internal {
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
 
