@@ -146,8 +146,7 @@ contract HydroFinance {
     }
 
     /// @notice To delete an account
-    /// @param _id The id of the account to delete
-    function removeAccount(uint256 _id) public {
+    function removeAccount() public {
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
         require(userByEin[ein].einOwner == ein, 'Only the EIN owner of the account can remove the account');
 
@@ -176,7 +175,7 @@ contract HydroFinance {
 
     /// @notice To get the user data
     /// @return Returns the EIN, address owner, array of card ids, array of bank ids and array of investment ids
-    function getUserData() public view returns() {
+    function getUserData() public view returns(uint256, address, uint256[] memory, uint256[] memory, uint256[] memory) {
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
         User memory u = userByEin[ein];
 
