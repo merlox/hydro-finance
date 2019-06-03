@@ -130,6 +130,9 @@ contract HydroFinance {
         userByEin[ein].bankIds.push(lastBankId);
     }
 
+    /// @notice To create an investment account for your user
+    /// @param _investmentNumber The number of the investment account that you want to create
+    /// @param _name The name of the investment account
     function addInvestmentAccount(uint256 _investmentNumber, string memory _name) public {
         require(_investmentNumber != 0, 'The investment account number must be set');
         require(bytes(_name).length != 0, 'The name of the investment account must be set');
@@ -137,10 +140,23 @@ contract HydroFinance {
         checkAndCreateUser();
         lastInvestmentId++;
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        Investment memory inv = Investment(lastInvestmentId, ein, _name, _investmentNumber);
     }
 
+    /// @notice To delete an account
+    /// @param _id The id of the account to delete
     function removeAccount(uint256 _id) public {
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        require(userByEin[ein].einOwner == ein, 'Only the EIN owner of the account can remove the account');
 
+        delete userByEin[ein];
+        for(uint256 i = 0; i < users.length; i++) {
+            if(users[i].einOwner == ein) {
+                User memory lastElement = users[users.length];
+                users[i] = lastElement;
+                users.length--;
+            }
+        }
     }
 
     /// @notice To create a new user if he doesn't have an account yet using his EIN identifier
