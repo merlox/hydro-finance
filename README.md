@@ -1,9 +1,8 @@
 # Hydro Finance Manager
 This is a smart contract that stores your credit cards, bank and investment accounts in one solidity contract named HydroFinance.sol using encryption to secure data on the blockchain.
 
-## Working of the contract
+## Workings of the contract
 It receives the credit card data, encrypts it using your unique EIN identifier and stores that information into your user account. You can then generate the encryption result off-chain using `web3.utils.soliditySha3()` and your required parameters, to generate the hash that you can use to verify your account.
-
 This is the only method to securely protect data on the open blockchain since we can't store sensitive information without encryptions.
 
 ## Understanding the functions
