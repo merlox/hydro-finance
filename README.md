@@ -6,6 +6,7 @@ It receives the credit card data, encrypts it using your unique EIN identifier a
 This is the only method to securely protect data on the open blockchain since we can't store sensitive information without encryptions.
 
 
+
 ## Understanding the functions
 The contract is made of 9 functions and the constructor:
 - The constructor requires the identity registry address to be deployed since it works with EIN addresses.
