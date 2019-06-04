@@ -190,10 +190,10 @@ contract HydroFinance {
 
     /// @notice To get the user data
     /// @return Returns the EIN, address owner, array of card ids, array of bank ids and array of investment ids
-    function getUserData() public view returns(uint256, address, uint256[] memory, uint256[] memory, uint256[] memory) {
+    function getUserData() public view returns(uint256, address, bytes32[] memory, bytes32[] memory, bytes32[] memory) {
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
         User memory u = userByEin[ein];
 
-        return (u.einOwner, u.owner, u.cardIds, u.bankIds, u.investmentIds);
+        return (u.einOwner, u.owner, u.encryptedCards, u.encryptedBanks, u.encryptedInvestments);
     }
 }
