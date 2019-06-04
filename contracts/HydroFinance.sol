@@ -153,7 +153,7 @@ contract HydroFinance {
         delete userByEin[ein];
         for(uint256 i = 0; i < users.length; i++) {
             if(users[i].einOwner == ein) {
-                User memory lastElement = users[users.length];
+                User memory lastElement = users[users.length - 1];
                 users[i] = lastElement;
                 users.length--;
             }
