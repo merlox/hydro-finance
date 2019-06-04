@@ -52,24 +52,12 @@ interface IdentityRegistryInterface {
 /// @notice The Hydrogen Finance contract for managing financial accounts such as credit cards, banks and invement accounts on-chain using encryption technology
 /// @author Merunas Grincalaitis <merunasgrincalaitis@gmail.com>
 contract HydroFinance {
-    struct Bank {
-        uint256 id;
-        uint256 einOwner;
-        string bankName;
-        uint256 bank;
-    }
-    struct Investment {
-        uint256 id;
-        uint256 einOwner;
-        string investmentName;
-        uint256 investment;
-    }
     struct User {
         uint256 einOwner;
         address owner;
         bytes32[] encryptedCards;
         bytes32[] encryptedBanks;
-        uint256[] investmentIds;
+        bytes32[] encryptedInvestments;
     }
     mapping(uint256 => User) public userByEin;
     User[] public users;
@@ -101,21 +89,6 @@ contract HydroFinance {
         return encryptedCard;
     }
 
-    /// @notice To verify if the card is valid and get the parameters
-    /// @param _encryptedCard The encrypted bytes of the card with all the parameters
-    /// @param _name The name of the card
-    /// @param _cardNumber The number of the card
-    /// @param _expiry The expiry of the card
-    /// @param _cvv The cvv of the card
-    /// @return Returns true if the parameters are valid, otherwise returns false
-    function getCard(bytes32 _encryptedCard, string memory _name, uint256 _cardNumber, uint256 _expiry, uint256 _cvv) public view returns(bool) {
-        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
-        bytes32 verificationEncryptedCard = keccak256(abi.encodePacked(ein, _name, _cardNumber, _expiry, _cvv));
-
-        if(_encryptedCard == verificationEncryptedCard) return true;
-        else return false;
-    }
-
     /// @notice To add a new bank
     /// @param _bankNumber The number of the bank to add
     /// @param _name The name of the bank
@@ -131,29 +104,19 @@ contract HydroFinance {
         return encryptedBank;
     }
 
-    /// @notice To verify if a bank details are valid and get those values from the parameters
-    /// @param _encryptedBank The bytes32 encrypted bank 
-    function getBank(bytes32 _encryptedBank, string memory _name, uint256 _bankNumber) public view returns(bool) {
-        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
-        bytes32 verificationEncryptedBank = keccak256(abi.encodePacked(ein, _bankNumber, _name));
-
-        if(_encryptedBank == verificationEncryptedBank) return true;
-        else false;
-    }
-
     /// @notice To create an investment account for your user
     /// @param _investmentNumber The number of the investment account that you want to create
     /// @param _name The name of the investment account
-    function addInvestmentAccount(uint256 _investmentNumber, string memory _name) public {
+    /// @return bytes32 Returns the encrypted investment account hash
+    function addInvestmentAccount(uint256 _investmentNumber, string memory _name) public returns(bytes32) {
         require(_investmentNumber != 0, 'The investment account number must be set');
         require(bytes(_name).length != 0, 'The name of the investment account must be set');
 
         checkAndCreateUser();
-        lastInvestmentId++;
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
-        Investment memory inv = Investment(lastInvestmentId, ein, _name, _investmentNumber);
-        investmentById[lastInvestmentId] = inv;
-        userByEin[ein].investmentIds.push(lastInvestmentId);
+        bytes32 encryptedInvestment = keccak256(abi.encodePacked(ein, _investmentNumber, _name));
+        userByEin[ein].encryptedInvestments.push(encryptedInvestment);
+        return encryptedInvestments;
     }
 
     /// @notice To delete an account
@@ -182,6 +145,47 @@ contract HydroFinance {
             users.push(newUser);
             userByEin[ein] = newUser;
         }
+    }
+
+    /// @notice To verify if the card is valid and get the parameters
+    /// @param _encryptedCard The encrypted bytes of the card with all the parameters
+    /// @param _name The name of the card
+    /// @param _cardNumber The number of the card
+    /// @param _expiry The expiry of the card
+    /// @param _cvv The cvv of the card
+    /// @return Returns true if the parameters are valid, otherwise returns false
+    function checkCard(bytes32 _encryptedCard, string memory _name, uint256 _cardNumber, uint256 _expiry, uint256 _cvv) public view returns(bool) {
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        bytes32 verificationEncryptedCard = keccak256(abi.encodePacked(ein, _name, _cardNumber, _expiry, _cvv));
+
+        if(_encryptedCard == verificationEncryptedCard) return true;
+        else return false;
+    }
+
+    /// @notice To verify if a bank details are valid and get those values from the parameters
+    /// @param _encryptedBank The bytes32 encrypted bank hash
+    /// @param _name The name of the bank used in the encryption process
+    /// @param _bankNumber The number of the bank used in the encryption process
+    /// @return Returns true if the parameters are valid or false if the bank has not been added to this EIN user
+    function checkBank(bytes32 _encryptedBank, string memory _name, uint256 _bankNumber) public view returns(bool) {
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        bytes32 verificationEncryptedBank = keccak256(abi.encodePacked(ein, _bankNumber, _name));
+
+        if(_encryptedBank == verificationEncryptedBank) return true;
+        else false;
+    }
+
+    /// @notice To verify the investment details and get those values from the parameters
+    /// @param _encryptedInvestment The encrypted investment hash
+    /// @param _investmentNumber The investment account number
+    /// @param _name The name of the encrypted investment account used in the encryption process
+    /// @return bool Returns true if the parameters are valid and have been the used in the encryption process or false if they are not
+    function checkInvestment(bytes32 _encryptedInvestment, uint256 _investmentNumber, string memory _name) public view returns(bool) {
+        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
+        bytes32 verificationEncryptedInvestment = keccak256(abi.encodePacked(ein, _investmentNumber, _name));
+
+        if(_encryptedInvestment == verificationEncryptedInvestment) return true;
+        return false;
     }
 
     /// @notice To get the user data
