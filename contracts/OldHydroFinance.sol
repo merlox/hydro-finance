@@ -52,6 +52,14 @@ interface IdentityRegistryInterface {
 /// @notice The Hydrogen Finance contract for managing financial accounts such as credit cards, banks and invement accounts on-chain using encryption technology
 /// @author Merunas Grincalaitis <merunasgrincalaitis@gmail.com>
 contract HydroFinance {
+    struct Card {
+        uint256 id;
+        uint256 einOwner;
+        string cardName;
+        uint256 card;
+        uint256 expiry;
+        uint256 cvv;
+    }
     struct Bank {
         uint256 id;
         uint256 einOwner;
@@ -67,11 +75,17 @@ contract HydroFinance {
     struct User {
         uint256 einOwner;
         address owner;
-        bytes32[] encryptedCards;
-        bytes32[] encryptedBanks;
+        uint256[] cardIds;
+        uint256[] bankIds;
         uint256[] investmentIds;
     }
     mapping(uint256 => User) public userByEin;
+    mapping(uint256 => Card) public cardById;
+    mapping(uint256 => Bank) public bankById;
+    mapping(uint256 => Investment) public investmentById;
+    uint256 public lastCardId;
+    uint256 public lastBankId;
+    uint256 public lastInvestmentId;
     User[] public users;
     address public identityRegistry;
 
@@ -87,58 +101,34 @@ contract HydroFinance {
     /// @param _expiry When the card expires in timestamp
     /// @param _name The name of the card
     /// @param _cvv The 3 or 4 digit code for verifying the card
-    /// @return bytes32 Returns the encrypted card bytes32
-    function addCard(uint256 _cardNumber, uint256 _expiry, string memory _name, uint256 _cvv) public returns(bytes32) {
+    function addCard(uint256 _cardNumber, uint256 _expiry, string memory _name, uint256 _cvv) public {
         require(_cardNumber != 0, 'The card number cannot be empty');
         require(_expiry != 0, 'The card expiration date cannot be empty');
         require(bytes(_name).length != 0, 'The card name must be set');
         require(_cvv != 0, 'The cvv cannot be empty');
 
         checkAndCreateUser();
+        lastCardId++;
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
-        bytes32 encryptedCard = keccak256(abi.encodePacked(ein, _name, _cardNumber, _expiry, _cvv));
-        userByEin[ein].encryptedCards.push(encryptedCard);
-        return encryptedCard;
-    }
+        Card memory newCard = Card(lastCardId, ein, _name, _cardNumber, _expiry, _cvv);
 
-    /// @notice To verify if the card is valid and get the parameters
-    /// @param _encryptedCard The encrypted bytes of the card with all the parameters
-    /// @param _name The name of the card
-    /// @param _cardNumber The number of the card
-    /// @param _expiry The expiry of the card
-    /// @param _cvv The cvv of the card
-    /// @return Returns true if the parameters are valid, otherwise returns false
-    function getCard(bytes32 _encryptedCard, string memory _name, uint256 _cardNumber, uint256 _expiry, uint256 _cvv) public view returns(bool) {
-        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
-        bytes32 verificationEncryptedCard = keccak256(abi.encodePacked(ein, _name, _cardNumber, _expiry, _cvv));
-
-        if(_encryptedCard == verificationEncryptedCard) return true;
-        else return false;
+        cardById[lastCardId] = newCard;
+        userByEin[ein].cardIds.push(lastCardId);
     }
 
     /// @notice To add a new bank
     /// @param _bankNumber The number of the bank to add
     /// @param _name The name of the bank
-    /// @return Returns the encrypted bank bytes32
-    function addBank(uint256 _bankNumber, string memory _name) public returns(bytes32) {
+    function addBank(uint256 _bankNumber, string memory _name) public {
         require(_bankNumber != 0, 'The bank number must be set');
         require(bytes(_name).length != 0, 'The bank name must be set');
 
         checkAndCreateUser();
+        lastBankId++;
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
-        bytes32 encryptedBank = keccak256(abi.encodePacked(ein, _bankNumber, _name));
-        userByEin[ein].encryptedBanks.push(encryptedBank);
-        return encryptedBank;
-    }
-
-    /// @notice To verify if a bank details are valid and get those values from the parameters
-    /// @param _encryptedBank The bytes32 encrypted bank 
-    function getBank(bytes32 _encryptedBank, string memory _name, uint256 _bankNumber) public view returns(bool) {
-        uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
-        bytes32 verificationEncryptedBank = keccak256(abi.encodePacked(ein, _bankNumber, _name));
-
-        if(_encryptedBank == verificationEncryptedBank) return true;
-        else false;
+        Bank memory newBank = Bank(lastBankId, ein, _name, _bankNumber);
+        bankById[lastBankId] = newBank;
+        userByEin[ein].bankIds.push(lastBankId);
     }
 
     /// @notice To create an investment account for your user
