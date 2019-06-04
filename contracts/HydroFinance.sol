@@ -167,12 +167,12 @@ contract HydroFinance {
     /// @param _name The name of the bank used in the encryption process
     /// @param _bankNumber The number of the bank used in the encryption process
     /// @return Returns true if the parameters are valid or false if the bank has not been added to this EIN user
-    function checkBank(bytes32 _encryptedBank, string memory _name, uint256 _bankNumber) public view returns(bool) {
+    function checkBank(bytes32 _encryptedBank, uint256 _bankNumber, string memory _name) public view returns(bool) {
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
         bytes32 verificationEncryptedBank = keccak256(abi.encodePacked(ein, _bankNumber, _name));
 
         if(_encryptedBank == verificationEncryptedBank) return true;
-        else false;
+        else return false;
     }
 
     /// @notice To verify the investment details and get those values from the parameters
@@ -185,7 +185,7 @@ contract HydroFinance {
         bytes32 verificationEncryptedInvestment = keccak256(abi.encodePacked(ein, _investmentNumber, _name));
 
         if(_encryptedInvestment == verificationEncryptedInvestment) return true;
-        return false;
+        else return false;
     }
 
     /// @notice To get the user data
