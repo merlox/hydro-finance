@@ -5,6 +5,7 @@ This is a smart contract that stores your credit cards, bank and investment acco
 It receives the credit card data, encrypts it using your unique EIN identifier and stores that information into your user account. You can then generate the encryption result off-chain using `web3.utils.soliditySha3()` and your required parameters, to generate the hash that you can use to verify your account.
 This is the only method to securely protect data on the open blockchain since we can't store sensitive information without encryptions.
 
+
 ## Understanding the functions
 The contract is made of 9 functions and the constructor:
 - The constructor requires the identity registry address to be deployed since it works with EIN addresses.
@@ -18,8 +19,10 @@ The contract is made of 9 functions and the constructor:
 - The function `checkInvestment()` does the same thing but with your investment account. You need to pass your encrypted investment hash as the first parameter, the investment number and the investment name.
 - The function `getUserData()` is a function that returns your user data, specifically your EIN, Ethereum address used when creating the account, your encrypted cards in an array of bytes32 hashes, your encrypted bank accounts in an array of bytes32 hashes and your encrypted investments in an array of bytes32 hashes.
 
-## Deploying your own Hydro Finance
+
+## Deploying your own Hydro Finance
 To deploy the contract, you must first deploy a Identity Registry Hydro contract which is used to manage user EIN identities. Then, you can create a unique EIN account with the function: `identityRegistry.createIdentity()` and deploy your Hydro Finance by setting the up the identity contract address in the constructor.
+
 
 ## Runing the tests
 You can run the tests easily by starting a private ethereum instance using ganache with 8.5 million gas limit so that you have plenty of space to manage. Run ganache with: `ganache-cli -l 0x81B320`.
