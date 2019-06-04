@@ -116,7 +116,7 @@ contract HydroFinance {
         uint256 ein = IdentityRegistryInterface(identityRegistry).getEIN(msg.sender);
         bytes32 encryptedInvestment = keccak256(abi.encodePacked(ein, _investmentNumber, _name));
         userByEin[ein].encryptedInvestments.push(encryptedInvestment);
-        return encryptedInvestments;
+        return encryptedInvestment;
     }
 
     /// @notice To delete an account
