@@ -166,7 +166,7 @@ contract HydroFinance {
 
         // If we can't find the user, create a new one
         if(userByEin[ein].owner == address(0)) {
-            uint256[] memory emptyArray = new uint256[](100);
+            uint256[] memory emptyArray = new uint256[](0);
             User memory newUser = User(ein, msg.sender, emptyArray, emptyArray, emptyArray);
             users.push(newUser);
             userByEin[ein] = newUser;
